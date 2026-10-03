@@ -31,7 +31,8 @@ namespace CheckDlc.Clients
             }
         }
 
-        private static PsnApi PsnApi => new PsnApi("CheckDlc");
+        private static readonly Lazy<PsnApi> _psnApi = new Lazy<PsnApi>(() => new PsnApi("CheckDlc"));
+        private static PsnApi PsnApi => _psnApi.Value;
 
 
         public PsnDlc() : base("PSN", CodeLang.GetOriginLang(API.Instance.ApplicationSettings.Language))
@@ -81,7 +82,7 @@ namespace CheckDlc.Clients
                 ShowNotificationPluginError(ex);
             }
 
-            return null;
+            return gameDlcs;
         }
     }
 }

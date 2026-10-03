@@ -41,3 +41,12 @@ Supporting [Playnite](https://www.patreon.com/playnite) and [SteamDB](https://st
     <img height='35' style='border:0px;height:46px;' src='https://cdn.prod.website-files.com/5c14e387dab576fe667689cf/670f5a0172b90570b1c21dab_kofi_logo.png' border='0' alt='Buy Me a Coffee at ko-fi.com' />
   </a>
 </div>
+
+## Support & Donate
+
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/goover)
+
+## License
+
+This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. See [LICENSE](LICENSE) for details.
+

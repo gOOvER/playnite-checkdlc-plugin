@@ -71,9 +71,6 @@ namespace CheckDlc
                 SourceName = "CheckDlc",
                 SettingsRoot = $"{nameof(PluginSettings)}.{nameof(PluginSettings.Settings)}"
             });
-
-            // TODO TEMP
-            FileSystem.DeleteFile(Path.Combine(PluginDatabase.Paths.PluginUserDataPath, "SteamUserData.json"));
         }
 
 

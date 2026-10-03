@@ -56,6 +56,7 @@ namespace CheckDlc.Clients
                     }
                     catch (Exception ex)
                     {
+                        Common.LogError(ex, false, true, PluginDatabase.PluginName);
                         isUserLoggedIn = false;
                     }
                 }
@@ -115,7 +116,7 @@ namespace CheckDlc.Clients
                 ShowNotificationPluginError(ex);
             }
 
-            return null;
+            return gameDlcs;
         }
 
 
@@ -127,7 +128,7 @@ namespace CheckDlc.Clients
                 //string NintendoUSUrl = "http://www.nintendo.com";
                 //string NintendoJPUrl = "https://www.nintendo.co.jp";
 
-                string url = string.Format(urlEurope, LocalLang) + "/select?q=" + searchTerm + "t&fq=type%3ADLC%20AND%20sorting_title%3A*%20AND%20*%3A*&sort=related_game_title_s%20asc&start=0&rows=250&wt=json";
+                string url = string.Format(urlEurope, LocalLang) + "/select?q=" + Uri.EscapeDataString(searchTerm) + "t&fq=type%3ADLC%20AND%20sorting_title%3A*%20AND%20*%3A*&sort=related_game_title_s%20asc&start=0&rows=250&wt=json";
                 string response = Web.DownloadStringData(url).GetAwaiter().GetResult();
                 _ = Serialization.TryFromJson(response, out SearchResult searchResult, out Exception ex);
                 if (ex != null)

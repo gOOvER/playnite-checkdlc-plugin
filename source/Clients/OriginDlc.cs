@@ -84,7 +84,7 @@ namespace CheckDlc.Clients
                 ShowNotificationPluginError(ex);
             }
 
-            return null;
+            return gameDlcs;
         }
     }
 }
