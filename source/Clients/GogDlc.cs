@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,7 +35,7 @@ namespace CheckDlc.Clients
 
         public GogDlc() : base("GOG", CodeLang.GetGogLang(API.Instance.ApplicationSettings.Language))
         {
-            GogApi.SetLanguage(API.Instance.ApplicationSettings.Language);
+            GogApi?.SetLanguage(API.Instance.ApplicationSettings.Language);
         }
 
 
@@ -46,7 +46,7 @@ namespace CheckDlc.Clients
 
             try
             {
-                if (GogApi.IsUserLoggedIn)
+                if (GogApi != null && GogApi.IsUserLoggedIn)
                 {
                     GogApi.SetCurrency(PluginDatabase.PluginSettings.Settings.GogCurrency);
 

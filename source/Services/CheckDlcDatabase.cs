@@ -1,4 +1,4 @@
-﻿using CheckDlc.Clients;
+using CheckDlc.Clients;
 using CheckDlc.Models;
 using CommonPluginsShared;
 using CommonPluginsShared.Collections;
@@ -209,36 +209,43 @@ namespace CheckDlc.Services
             }
 
             GameDlc loadedItem = Get(id, true);
+            if (loadedItem == null)
+            {
+                return;
+            }
+
             if (CheckDlc.SupportedLibrary.Contains(game.PluginId) && !loadedItem.IsManual)
             {
                 GameDlc webItem = GetWeb(id);
-                webItem.PriceNotification = loadedItem.PriceNotification;
-
-                if (webItem != null && !ReferenceEquals(loadedItem, webItem))
+                if (webItem != null)
                 {
-                    Update(webItem);
+                    webItem.PriceNotification = loadedItem.PriceNotification;
+                    if (!ReferenceEquals(loadedItem, webItem))
+                    {
+                        Update(webItem);
+                    }
+                    ActionAfterRefresh(webItem);
                 }
                 else
                 {
-                    webItem = loadedItem;
+                    ActionAfterRefresh(loadedItem);
                 }
-
-                ActionAfterRefresh(webItem);
             }
             else if (loadedItem.IsManual)
             {
                 GameDlc webItem = GetManual(id, loadedItem.AppId);
-
-                if (webItem != null && !ReferenceEquals(loadedItem, webItem))
+                if (webItem != null)
                 {
-                    Update(webItem);
+                    if (!ReferenceEquals(loadedItem, webItem))
+                    {
+                        Update(webItem);
+                    }
+                    ActionAfterRefresh(webItem);
                 }
                 else
                 {
-                    webItem = loadedItem;
+                    ActionAfterRefresh(loadedItem);
                 }
-
-                ActionAfterRefresh(webItem);
             }
             else
             {
@@ -282,13 +289,13 @@ namespace CheckDlc.Services
                     Guid? TagId = FindGoodPluginTags(string.Empty);
                     if (TagId != null)
                     {
-                        if (game.TagIds != null)
+                        if (game.TagIds == null)
+                        {
+                            game.TagIds = new List<Guid>();
+                        }
+                        if (!game.TagIds.Contains((Guid)TagId))
                         {
                             game.TagIds.Add((Guid)TagId);
-                        }
-                        else
-                        {
-                            game.TagIds = new List<Guid> { (Guid)TagId };
                         }
                     }
 
@@ -297,7 +304,14 @@ namespace CheckDlc.Services
                         TagId = FindGoodPluginTags("100%");
                         if (TagId != null)
                         {
-                            game.TagIds.Add((Guid)TagId);
+                            if (game.TagIds == null)
+                            {
+                                game.TagIds = new List<Guid>();
+                            }
+                            if (!game.TagIds.Contains((Guid)TagId))
+                            {
+                                game.TagIds.Add((Guid)TagId);
+                            }
                         }
                     }
                 }
@@ -309,13 +323,14 @@ namespace CheckDlc.Services
             }
             else if (TagMissing)
             {
-                if (game.TagIds != null)
+                Guid noDataTag = (Guid)AddNoDataTag();
+                if (game.TagIds == null)
                 {
-                    game.TagIds.Add((Guid)AddNoDataTag());
+                    game.TagIds = new List<Guid>();
                 }
-                else
+                if (!game.TagIds.Contains(noDataTag))
                 {
-                    game.TagIds = new List<Guid> { (Guid)AddNoDataTag() };
+                    game.TagIds.Add(noDataTag);
                 }
             }
 
@@ -327,36 +342,66 @@ namespace CheckDlc.Services
         }
 
 
+        private static string EscapeCsv(string val)
+        {
+            if (string.IsNullOrEmpty(val))
+            {
+                return string.Empty;
+            }
+
+            // CSV/Excel formula injection prevention: if first character is =, +, -, @, prefix with '
+            if (val.Length > 0 && (val[0] == '=' || val[0] == '+' || val[0] == '-' || val[0] == '@'))
+            {
+                val = "'" + val;
+            }
+
+            return val.Replace("\"", "\"\"");
+        }
 
         internal override string GetCsvData(GlobalProgressActionArgs a, bool minimum)
         {
-            string csvData = string.Empty;
-            Database.Items?.ForEach(x =>
-            {
-                // Header
-                if (csvData.IsNullOrEmpty())
-                {
-                    csvData = "\"Game name\";\"Platform\";\"Dlc name\";\"Price\";\"Is owned\";\"Is owned manually\";\"Is hidden\";\"Dlc link\";\"Is manual added\";";
-                }
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.Append("\"Game name\";\"Platform\";\"Dlc name\";\"Price\";\"Is owned\";\"Is owned manually\";\"Is hidden\";\"Dlc link\";\"Is manual added\";");
 
-                x.Value.Items.ForEach(y =>
+            if (Database.Items != null)
+            {
+                foreach (var x in Database.Items)
                 {
-                    if (a.CancelToken.IsCancellationRequested)
+                    if (x.Value?.Items == null)
                     {
-                        return;
+                        continue;
                     }
 
-                    a.Text = $"{PluginName} - {ResourceProvider.GetString("LOCCommonExtracting")}"
-                        + "\n\n" + $"{a.CurrentProgressValue}/{a.ProgressMaxValue}"
-                        + "\n" + x.Value.Game?.Name + (x.Value.Game?.Source == null ? string.Empty : $" ({x.Value.Game?.Source.Name})");
+                    foreach (var y in x.Value.Items)
+                    {
+                        if (a.CancelToken.IsCancellationRequested)
+                        {
+                            return sb.ToString();
+                        }
 
-                    csvData += Environment.NewLine;
-                    csvData += $"\"{x.Value.Name}\";\"{x.Value.Source?.Name ?? x.Value.Platforms?.First()?.Name ?? "Playnite"}\";\"{y.Name}\";\"{y.Price}\";\"{(y.IsOwned ? "X" : string.Empty)}\";\"{(y.IsManualOwned ? "X" : string.Empty)}\";\"{(y.IsHidden ? "X" : string.Empty)}\";\"{y.Link}\";\"{(x.Value.IsManual ? "X" : string.Empty)}\";";
+                        a.Text = $"{PluginName} - {ResourceProvider.GetString("LOCCommonExtracting")}"
+                            + "\n\n" + $"{a.CurrentProgressValue}/{a.ProgressMaxValue}"
+                            + "\n" + x.Value.Game?.Name + (x.Value.Game?.Source == null ? string.Empty : $" ({x.Value.Game?.Source.Name})");
 
-                    a.CurrentProgressValue++;
-                });
-            });
-            return csvData;
+                        sb.AppendLine();
+                        string gameName = EscapeCsv(x.Value.Name);
+                        string platform = EscapeCsv(x.Value.Source?.Name ?? x.Value.Platforms?.FirstOrDefault()?.Name ?? "Playnite");
+                        string dlcName = EscapeCsv(y.Name);
+                        string price = EscapeCsv(y.Price);
+                        string isOwned = y.IsOwned ? "X" : string.Empty;
+                        string isManualOwned = y.IsManualOwned ? "X" : string.Empty;
+                        string isHidden = y.IsHidden ? "X" : string.Empty;
+                        string link = EscapeCsv(y.Link);
+                        string isManual = x.Value.IsManual ? "X" : string.Empty;
+
+                        sb.Append($"\"{gameName}\";\"{platform}\";\"{dlcName}\";\"{price}\";\"{isOwned}\";\"{isManualOwned}\";\"{isHidden}\";\"{link}\";\"{isManual}\";");
+
+                        a.CurrentProgressValue++;
+                    }
+                }
+            }
+
+            return sb.ToString();
         }
     }
 }

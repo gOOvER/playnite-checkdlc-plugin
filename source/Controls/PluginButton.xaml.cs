@@ -1,4 +1,4 @@
-﻿using CommonPluginsShared;
+using CommonPluginsShared;
 using CommonPluginsShared.Collections;
 using CommonPluginsShared.Controls;
 using CommonPluginsShared.Interfaces;
@@ -24,11 +24,11 @@ namespace CheckDlc.Controls
         private CheckDlcDatabase PluginDatabase => CheckDlc.PluginDatabase; 
         internal override IPluginDatabase pluginDatabase => PluginDatabase;
 
-        private PluginButtonDataContext ControlDataContext =  new PluginButtonDataContext();
+        private PluginButtonDataContext ControlDataContext = new PluginButtonDataContext();
         internal override IDataContext controlDataContext
         {
             get => ControlDataContext;
-            set => ControlDataContext = (PluginButtonDataContext)controlDataContext;
+            set => ControlDataContext = (PluginButtonDataContext)value;
         }
 
         public PluginButton(CheckDlc plugin)
@@ -66,8 +66,8 @@ namespace CheckDlc.Controls
 
         public override void SetData(Game newContext, PluginDataBaseGameBase PluginGameData)
         {
-            GameDlc gameDlc = (GameDlc)PluginGameData;
-            MustDisplay = gameDlc.HasData;
+            GameDlc gameDlc = PluginGameData as GameDlc;
+            MustDisplay = gameDlc?.HasData ?? false;
         }
 
 

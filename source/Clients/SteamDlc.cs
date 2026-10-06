@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using CheckDlc.Models;
 using Playnite.SDK.Models;
@@ -44,7 +44,7 @@ namespace CheckDlc.Clients
 
             try
             {
-                if (SteamApi.IsUserLoggedIn)
+                if (SteamApi != null && SteamApi.IsUserLoggedIn)
                 {
                     List<Dlc> newDlcs = new List<Dlc>();
                     ObservableCollection<DlcInfos> dlcs = SteamApi.GetDlcInfos(game.GameId, SteamApi.CurrentAccountInfos);

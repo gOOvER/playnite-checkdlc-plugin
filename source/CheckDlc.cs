@@ -1,4 +1,4 @@
-﻿using CheckDlc.Clients;
+using CheckDlc.Clients;
 using CheckDlc.Controls;
 using CheckDlc.Models;
 using CheckDlc.Services;
@@ -100,7 +100,7 @@ namespace CheckDlc
             try
             {
                 string ButtonName = ((Button)sender).Name;
-                if (ButtonName == "PART_CustomHowLongToBeatButton")
+                if (ButtonName == "PART_CustomCheckDlcButton" || ButtonName == "PART_CustomHowLongToBeatButton")
                 {
                     Common.LogDebug(true, $"OnCustomThemeButtonClick()");
 
@@ -202,13 +202,16 @@ namespace CheckDlc
                         ResourceProvider.GetString("LOCCommonSelectGames")
                     );
 
-                    if (selectedGame != null)
+                    if (selectedGame != null && !selectedGame.Description.IsNullOrEmpty())
                     {
-                        uint appId = uint.Parse(selectedGame.Description.Split('-')[0].Trim());
-                        gameDlc.IsManual = true;
-                        gameDlc.AppId = appId;
-                        PluginDatabase.AddOrUpdate(gameDlc);
-                        PluginDatabase.Refresh(gameMenu.Id);
+                        string firstPart = selectedGame.Description.Split('-')[0].Trim();
+                        if (uint.TryParse(firstPart, out uint appId))
+                        {
+                            gameDlc.IsManual = true;
+                            gameDlc.AppId = appId;
+                            PluginDatabase.AddOrUpdate(gameDlc);
+                            PluginDatabase.Refresh(gameMenu.Id);
+                        }
                     }
                 }
             });
@@ -495,9 +498,9 @@ namespace CheckDlc
                 _ = GogApi.CurrentAccountInfos;
             }
 
-            _ = Task.Run(() =>
+            _ = Task.Run(async () =>
             {
-                Thread.Sleep(10000);
+                await Task.Delay(10000);
                 PreventLibraryUpdatedOnStart = true;
             });
 
@@ -508,11 +511,16 @@ namespace CheckDlc
                     PluginDatabase.Database.Where(x => x.PriceNotification && !x.IsManual).ForEach(x =>
                     {
                         PluginDatabase.RefreshNoLoader(x.Id);
-                        List<Dlc> newItems = PluginDatabase.GetOnlyCache(x.Id).Items;
-
-                        newItems.ForEach(y =>
+                        List<Dlc> newItems = PluginDatabase.GetOnlyCache(x.Id)?.Items;
+                        if (newItems == null || x.Items == null)
                         {
-                            if (y.PriceNumeric != x.Items.Find(z => z.DlcId.IsEqual(y.DlcId)).PriceNumeric)
+                            return;
+                        }
+
+                        foreach (Dlc y in newItems)
+                        {
+                            Dlc oldDlc = x.Items.Find(z => z.DlcId.IsEqual(y.DlcId));
+                            if (oldDlc != null && y.PriceNumeric != oldDlc.PriceNumeric)
                             {
                                 API.Instance.Notifications.Add(new NotificationMessage(
                                     $"{PluginDatabase.PluginName}-{x.Id}",
@@ -534,7 +542,7 @@ namespace CheckDlc
                                 ));
                                 return;
                             }
-                        });
+                        }
                     });
                 });
             }

@@ -1,4 +1,4 @@
-﻿using CheckDlc.Services;
+using CheckDlc.Services;
 using CommonPluginsShared;
 using Playnite.SDK;
 using System;
@@ -48,17 +48,19 @@ namespace CheckDlc.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!((string)((FrameworkElement)sender).Tag).IsNullOrEmpty())
+            if (((FrameworkElement)sender).Tag is string url &&
+                Uri.TryCreate(url, UriKind.Absolute, out Uri uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
             {
-                _ = Process.Start((string)((FrameworkElement)sender).Tag);
+                Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
             }
         }
 
 
         private void Button_Click_Refresh(object sender, RoutedEventArgs e)
         {
-            List<LvDlc> data = (List<LvDlc>)PART_ListviewDlc.ItemsSource;
-            if (data.Count > 0)
+            List<LvDlc> data = PART_ListviewDlc.ItemsSource as List<LvDlc>;
+            if (data != null && data.Count > 0)
             {
                 List<Guid> dataId = data.Select(x => x.Id).Distinct().ToList();
                 PluginDatabase.Refresh(dataId);
@@ -114,24 +116,26 @@ namespace CheckDlc.Views
         {
             try
             {
-                Guid Id = Guid.Parse(((Button)sender).Tag.ToString());
-                PluginDatabase.Refresh(Id);
+                if (Guid.TryParse(((Button)sender).Tag?.ToString(), out Guid Id))
+                {
+                    PluginDatabase.Refresh(Id);
 
-                PART_ListviewDlc.ItemsSource = null;
-                List<LvDlc> lvDlcs = PluginDatabase.Database.Items
-                    .SelectMany(x => x.Value.Items.Where(y => y.IsFree && !y.IsOwned)
-                    .Select(z => new LvDlc
-                    {
-                        Icon = x.Value.Icon,
-                        Id = x.Key,
-                        DlcId = z.Id,
-                        Name = x.Value.Name,
-                        NameDlc = z.Name,
-                        NameHide = x.Value.Name + "##" + z.Name,
-                        Link = z.Link
-                    })).ToList();
+                    PART_ListviewDlc.ItemsSource = null;
+                    List<LvDlc> lvDlcs = PluginDatabase.Database.Items
+                        .SelectMany(x => x.Value.Items.Where(y => y.IsFree && !y.IsOwned)
+                        .Select(z => new LvDlc
+                        {
+                            Icon = x.Value.Icon,
+                            Id = x.Key,
+                            DlcId = z.Id,
+                            Name = x.Value.Name,
+                            NameDlc = z.Name,
+                            NameHide = x.Value.Name + "##" + z.Name,
+                            Link = z.Link
+                        })).ToList();
 
-                PART_ListviewDlc.ItemsSource = lvDlcs;
+                    PART_ListviewDlc.ItemsSource = lvDlcs;
+                }
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿using CheckDlc.Models;
+using CheckDlc.Models;
 using CheckDlc.Services;
 using CommonPluginsShared.Collections;
 using CommonPluginsShared.Controls;
@@ -28,13 +28,19 @@ namespace CheckDlc.Controls
         internal override IDataContext controlDataContext
         {
             get => ControlDataContext;
-            set => ControlDataContext = (PPluginListDlcDataContext)controlDataContext;
+            set => ControlDataContext = (PPluginListDlcDataContext)value;
         }
 
 
         #region Properties
-        public static readonly DependencyProperty ListTypeProperty;
-        public ListDlcType ListType { get; set; } = ListDlcType.All;
+        public static readonly DependencyProperty ListTypeProperty =
+            DependencyProperty.Register(nameof(ListType), typeof(ListDlcType), typeof(PluginListDlc), new PropertyMetadata(ListDlcType.All));
+
+        public ListDlcType ListType
+        {
+            get => (ListDlcType)GetValue(ListTypeProperty);
+            set => SetValue(ListTypeProperty, value);
+        }
         #endregion
 
 
@@ -84,7 +90,13 @@ namespace CheckDlc.Controls
 
         public override void SetData(Game newContext, PluginDataBaseGameBase PluginGameData)
         {
-            GameDlc gameDlc = (GameDlc)PluginGameData;
+            GameDlc gameDlc = PluginGameData as GameDlc;
+            if (gameDlc?.Items == null)
+            {
+                ControlDataContext.ItemsSource = new ObservableCollection<Dlc>();
+                return;
+            }
+
             switch (ListType)
             {
                 case ListDlcType.All:
@@ -108,9 +120,11 @@ namespace CheckDlc.Controls
         #region Events
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!((string)((FrameworkElement)sender).Tag).IsNullOrEmpty())
+            if (((FrameworkElement)sender).Tag is string url &&
+                Uri.TryCreate(url, UriKind.Absolute, out Uri uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
             {
-                _ = Process.Start((string)((FrameworkElement)sender).Tag);
+                Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
             }
         }
         #endregion  

@@ -1,4 +1,4 @@
-﻿using CommonPluginsShared.Collections;
+using CommonPluginsShared.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,7 +10,7 @@ namespace CheckDlc.Models
         public override List<Dlc> Items { get => items; set => SetValue(ref items, value); }
 
         public bool PriceNotification { get; set; }
-        public bool HasAllDlc => Items?.Where(x => !x.IsOwned)?.Count() == 0;
+        public bool HasAllDlc => Items?.Count > 0 && !Items.Any(x => !x.IsOwned);
 
         public bool IsManual { get; set; }
         public uint AppId { get; set; }

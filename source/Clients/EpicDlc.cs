@@ -1,4 +1,4 @@
-﻿using CheckDlc.Models;
+using CheckDlc.Models;
 using CommonPluginsShared;
 using CommonPluginsStores.Epic;
 using CommonPluginsStores.Models;
@@ -36,7 +36,7 @@ namespace CheckDlc.Clients
 
         public EpicDlc() : base("Epic", CodeLang.GetEpicLang(API.Instance.ApplicationSettings.Language))
         {
-            EpicApi.SetLanguage(API.Instance.ApplicationSettings.Language);
+            EpicApi?.SetLanguage(API.Instance.ApplicationSettings.Language);
         }
 
 
@@ -47,7 +47,7 @@ namespace CheckDlc.Clients
 
             try
             {
-                if (EpicApi.IsUserLoggedIn)
+                if (EpicApi != null && EpicApi.IsUserLoggedIn)
                 {
                     List<Dlc> newDlcs = new List<Dlc>();
                     string productNameSpace = EpicApi.GetNameSpace(game);

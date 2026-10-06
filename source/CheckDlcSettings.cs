@@ -1,4 +1,4 @@
-﻿using CheckDlc.Models;
+using CheckDlc.Models;
 using CommonPluginsShared;
 using CommonPluginsShared.Plugins;
 using CommonPluginsStores;
@@ -119,29 +119,38 @@ namespace CheckDlc
         // This method should save settings made to Option1 and Option2.
         public void EndEdit()
         {
-            // StoreAPI intialization
-            CheckDlc.SteamApi.StoreSettings = Settings.SteamStoreSettings;
-            if (Settings.PluginState.SteamIsEnabled)
+            // StoreAPI initialization
+            if (CheckDlc.SteamApi != null)
             {
-                CheckDlc.SteamApi.SaveCurrentUser();
-                CheckDlc.SteamApi.CurrentAccountInfos = null;
-                _ = CheckDlc.SteamApi.CurrentAccountInfos;
+                CheckDlc.SteamApi.StoreSettings = Settings.SteamStoreSettings;
+                if (Settings.PluginState.SteamIsEnabled)
+                {
+                    CheckDlc.SteamApi.SaveCurrentUser();
+                    CheckDlc.SteamApi.CurrentAccountInfos = null;
+                    _ = CheckDlc.SteamApi.CurrentAccountInfos;
+                }
             }
 
-            CheckDlc.EpicApi.StoreSettings = Settings.SteamStoreSettings;
-            if (Settings.PluginState.EpicIsEnabled)
+            if (CheckDlc.EpicApi != null)
             {
-                CheckDlc.EpicApi.SaveCurrentUser();
-                CheckDlc.EpicApi.CurrentAccountInfos = null;
-                _ = CheckDlc.EpicApi.CurrentAccountInfos;
+                CheckDlc.EpicApi.StoreSettings = Settings.EpicStoreSettings;
+                if (Settings.PluginState.EpicIsEnabled)
+                {
+                    CheckDlc.EpicApi.SaveCurrentUser();
+                    CheckDlc.EpicApi.CurrentAccountInfos = null;
+                    _ = CheckDlc.EpicApi.CurrentAccountInfos;
+                }
             }
 
-            CheckDlc.GogApi.StoreSettings = Settings.GogStoreSettings;
-            if (Settings.PluginState.GogIsEnabled)
+            if (CheckDlc.GogApi != null)
             {
-                CheckDlc.GogApi.SaveCurrentUser();
-                CheckDlc.GogApi.CurrentAccountInfos = null;
-                _ = CheckDlc.GogApi.CurrentAccountInfos;
+                CheckDlc.GogApi.StoreSettings = Settings.GogStoreSettings;
+                if (Settings.PluginState.GogIsEnabled)
+                {
+                    CheckDlc.GogApi.SaveCurrentUser();
+                    CheckDlc.GogApi.CurrentAccountInfos = null;
+                    _ = CheckDlc.GogApi.CurrentAccountInfos;
+                }
             }
 
             Plugin.SavePluginSettings(Settings);

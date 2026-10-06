@@ -1,4 +1,4 @@
-﻿using CommonPluginsShared;
+using CommonPluginsShared;
 using CommonPluginsShared.Extensions;
 using Playnite.SDK.Data;
 using System;
@@ -33,66 +33,70 @@ namespace CheckDlc.Models
         }
 
         [DontSerialize]
-        public bool IsHidden => PluginDatabase.PluginSettings.Settings.IgnoredList.Contains(Id);
+        public bool IsHidden => PluginDatabase?.PluginSettings?.Settings?.IgnoredList?.Contains(Id) ?? false;
 
         [DontSerialize]
-        public bool IsManualOwned => PluginDatabase.PluginSettings.Settings.ManuallyOwneds.Contains(Id);
+        public bool IsManualOwned => PluginDatabase?.PluginSettings?.Settings?.ManuallyOwneds?.Contains(Id) ?? false;
 
-        public string Price { get; set; }
-        public string PriceBase { get; set; }
-
-        [DontSerialize]
-        public double PriceNumeric
+        private string _price;
+        public string Price
         {
-            get
+            get => _price;
+            set
             {
-                if (Price.IsNullOrEmpty())
-                {
-                    return 0;
-                }
-
-                // Symbol is after
-                string temp = Price.Replace(",--", string.Empty).Replace(".--", string.Empty).Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator + "--", string.Empty);
-                temp = Regex.Split(temp, @"\s+").Where(s => s != string.Empty).First();
-                temp = temp.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator).Replace(",", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-                temp = Regex.Replace(temp, @"[^\d" + CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator + "-]", "");
-
-                _ = double.TryParse(temp, out double dPrice);
-
-                // Try symbol before
-                if (dPrice == 0)
-                {
-                    temp = Price.Replace(",--", string.Empty).Replace(".--", string.Empty).Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator + "--", string.Empty);
-                    temp = Regex.Split(temp, @"\s+").Where(s => s != string.Empty).Last();
-                    temp = temp.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator).Replace(",", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-                    temp = Regex.Replace(temp, @"[^\d" + CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator + "-]", "");
-
-                    _ = double.TryParse(temp, out dPrice);
-                }
-
-                return dPrice;
+                _price = value;
+                _priceNumeric = null;
             }
         }
 
-        [DontSerialize]
-        public double PriceBaseNumeric
+        private string _priceBase;
+        public string PriceBase
         {
-            get
+            get => _priceBase;
+            set
             {
-                if (PriceBase.IsNullOrEmpty())
-                {
-                    return 0;
-                }
-
-                string temp = PriceBase.Replace(",--", string.Empty).Replace(".--", string.Empty).Replace(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator + "--", string.Empty);
-                temp = Regex.Split(temp, @"\s+").Where(s => s != string.Empty).First();
-                temp = temp.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator).Replace(",", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
-                temp = Regex.Replace(temp, @"[^\d" + CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator  + "-]", "");
-
-                _ = double.TryParse(temp, out double dPrice);
-                return dPrice;
+                _priceBase = value;
+                _priceBaseNumeric = null;
             }
         }
+
+        private static readonly Regex SplitWhitespaceRegex = new Regex(@"\s+", RegexOptions.Compiled);
+
+        private static double ParsePrice(string rawPrice)
+        {
+            if (rawPrice.IsNullOrEmpty())
+            {
+                return 0;
+            }
+
+            string sep = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            string temp = rawPrice.Replace(",--", string.Empty).Replace(".--", string.Empty).Replace(sep + "--", string.Empty);
+            string[] parts = SplitWhitespaceRegex.Split(temp).Where(s => !string.IsNullOrEmpty(s)).ToArray();
+            if (parts.Length == 0)
+            {
+                return 0;
+            }
+
+            string first = parts[0].Replace(".", sep).Replace(",", sep);
+            first = Regex.Replace(first, @"[^\d" + Regex.Escape(sep) + "-]", string.Empty);
+            if (double.TryParse(first, NumberStyles.Any, CultureInfo.CurrentCulture, out double dPrice) && dPrice > 0)
+            {
+                return dPrice;
+            }
+
+            string last = parts[parts.Length - 1].Replace(".", sep).Replace(",", sep);
+            last = Regex.Replace(last, @"[^\d" + Regex.Escape(sep) + "-]", string.Empty);
+            _ = double.TryParse(last, NumberStyles.Any, CultureInfo.CurrentCulture, out dPrice);
+            return dPrice;
+        }
+
+        private double? _priceNumeric;
+        [DontSerialize]
+        public double PriceNumeric => _priceNumeric ?? (_priceNumeric = ParsePrice(Price)).Value;
+
+        private double? _priceBaseNumeric;
+        [DontSerialize]
+        public double PriceBaseNumeric => _priceBaseNumeric ?? (_priceBaseNumeric = ParsePrice(PriceBase)).Value;
 
         [DontSerialize]
         public bool IsFree => !Price.IsNullOrEmpty() && PriceNumeric == 0;

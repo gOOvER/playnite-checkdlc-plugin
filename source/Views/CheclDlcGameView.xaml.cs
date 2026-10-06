@@ -1,4 +1,4 @@
-﻿using CheckDlc.Models;
+using CheckDlc.Models;
 using CheckDlc.Services;
 using Playnite.SDK.Models;
 using System;
@@ -40,9 +40,11 @@ namespace CheckDlc.Views
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            if (!((string)((FrameworkElement)sender).Tag).IsNullOrEmpty())
+            if (((FrameworkElement)sender).Tag is string url &&
+                Uri.TryCreate(url, UriKind.Absolute, out Uri uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
             {
-                _ = Process.Start((string)((FrameworkElement)sender).Tag);
+                Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
             }
         }
 
@@ -59,8 +61,11 @@ namespace CheckDlc.Views
         {
             ToggleButton tb = sender as ToggleButton;
             GameDlc data = PluginDatabase.GetOnlyCache(GameContext);
-            data.PriceNotification = (bool)tb.IsChecked;
-            PluginDatabase.Update(data);
+            if (data != null)
+            {
+                data.PriceNotification = (bool)tb.IsChecked;
+                PluginDatabase.Update(data);
+            }
         }
 
 
@@ -95,29 +100,42 @@ namespace CheckDlc.Views
             PART_Dlcs.ItemsSource = null;
 
             GameDlc gameDlc = PluginDatabase.Get(GameContext, true);
-            if (gameDlc?.Count == 0)
+            if (gameDlc?.Items == null || gameDlc.Count == 0)
             {
                 return;
             }
 
             PART_PriceNotification.IsChecked = gameDlc.PriceNotification;
-            List<Dlc> data = new List<Dlc>();
 
-            _ = double.TryParse(price, out double PriceLimit);
-            if (PriceLimit == 0)
+            double PriceLimit = double.MaxValue;
+            if (!string.IsNullOrWhiteSpace(price) && double.TryParse(price, NumberStyles.Any, CultureInfo.CurrentCulture, out double parsedLimit))
             {
-                PriceLimit = 1000000000;
+                PriceLimit = parsedLimit;
             }
 
-            data = gameDlc.Items.Where(x => (!hiddenOwned || !x.IsOwned) && (showHidden || !x.IsHidden) && x.PriceNumeric <= PriceLimit).OrderBy(x => x.Name).ToList();
+            IEnumerable<Dlc> query = gameDlc.Items;
+            if (hiddenOwned)
+            {
+                query = query.Where(x => !x.IsOwned);
+            }
+            if (!showHidden)
+            {
+                query = query.Where(x => !x.IsHidden);
+            }
+            else
+            {
+                query = query.Where(x => x.IsHidden);
+            }
             if (onlyFree)
             {
-                data = data.Where(x => x.IsFree).ToList();
+                query = query.Where(x => x.IsFree);
             }
-            if (showHidden)
+            if (PriceLimit < double.MaxValue)
             {
-                data = data.Where(x => x.IsHidden).ToList();
+                query = query.Where(x => x.PriceNumeric <= PriceLimit);
             }
+
+            List<Dlc> data = query.OrderBy(x => x.Name).ToList();
 
             PART_Dlcs.ItemsSource = data;
             PART_TotalFoundCount.Text = data.Count.ToString();
