@@ -39,6 +39,7 @@ namespace CommonPluginsStores.Epic
         private string UrlAuthCode => UrlBase + @"/id/api/redirect?clientId=34a02cf8f4414e29b15921876da36f9a&responseType=code";
 
         private string UrlGraphQL => @"https://graphql.epicgames.com/graphql";
+        private static bool _graphQlUnavailable = false;
 
         private string UrlApiServiceBase => @"https://account-public-service-prod03.ol.epicgames.com";
         private string UrlAccountAuth => UrlApiServiceBase + @"/account/api/oauth/token";
@@ -897,6 +898,11 @@ namespace CommonPluginsStores.Epic
 
             string ProductSlug = string.Empty;
 
+            if (_graphQlUnavailable)
+            {
+                return ProductSlug;
+            }
+
             try
             {
                 using (WebStoreClient client = new WebStoreClient())
@@ -964,6 +970,11 @@ namespace CommonPluginsStores.Epic
         private string GetNameSpace(string name, string productSlug)
         {
             string nameSpace = string.Empty;
+
+            if (_graphQlUnavailable)
+            {
+                return nameSpace;
+            }
 
             try
             {
@@ -1045,6 +1056,11 @@ namespace CommonPluginsStores.Epic
 
         private async Task<EpicAddonsByNamespace> QueryAddonsByNamespace(string epic_namespace)
         {
+            if (_graphQlUnavailable || string.IsNullOrEmpty(epic_namespace))
+            {
+                return null;
+            }
+
             try
             {
                 string cachePath = Path.Combine(PathAppsData, epic_namespace + ".json");
@@ -1060,7 +1076,18 @@ namespace CommonPluginsStores.Epic
                     using (HttpClient httpClient = new HttpClient())
                     {
                         HttpResponseMessage response = await httpClient.PostAsync(UrlGraphQL, content);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            _graphQlUnavailable = true;
+                            Logger.Warn($"Epic GraphQL endpoint returned {(int)response.StatusCode} ({response.StatusCode}). Marking endpoint unavailable.");
+                            return null;
+                        }
                         string str = await response.Content.ReadAsStringAsync();
+                        if (string.IsNullOrWhiteSpace(str) || !str.TrimStart().StartsWith("{"))
+                        {
+                            _graphQlUnavailable = true;
+                            return null;
+                        }
                         data = Serialization.FromJson<EpicAddonsByNamespace>(str);
                     }
                 }

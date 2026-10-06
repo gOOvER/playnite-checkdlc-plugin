@@ -1,4 +1,4 @@
-﻿using CommonPlayniteShared.PluginLibrary.EpicLibrary.Models;//using EpicLibrary.Models;
+using CommonPlayniteShared.PluginLibrary.EpicLibrary.Models;//using EpicLibrary.Models;
 using CommonPluginsShared;
 using Playnite.SDK.Data;
 using System;
@@ -27,15 +27,31 @@ namespace CommonPlayniteShared.PluginLibrary.EpicLibrary.Services
             httpClient.Dispose();
         }
 
-        public async Task<List<WebStoreModels.QuerySearchResponse.Data.CatalogItem.SearchStore.SearchStoreElement>> QuerySearch(string searchTerm)//public async Task<List<WebStoreModels.QuerySearchResponse.SearchStoreElement>> QuerySearch(string searchTerm)
+        public async Task<List<WebStoreModels.QuerySearchResponse.Data.CatalogItem.SearchStore.SearchStoreElement>> QuerySearch(string searchTerm)
         {
-            var query = new WebStoreModels.QuerySearch();
-            query.variables.keywords = HttpUtility.UrlEncode(searchTerm);
-            var content = new StringContent(Serialization.ToJson(query), Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(GraphQLEndpoint, content);
-            var str = await response.Content.ReadAsStringAsync();
-            var data = Serialization.FromJson<WebStoreModels.QuerySearchResponse>(str);
-            return data.data.Catalog.searchStore.elements;
+            try
+            {
+                var query = new WebStoreModels.QuerySearch();
+                query.variables.keywords = HttpUtility.UrlEncode(searchTerm);
+                var content = new StringContent(Serialization.ToJson(query), Encoding.UTF8, "application/json");
+                var response = await httpClient.PostAsync(GraphQLEndpoint, content);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+                var str = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(str) || !str.TrimStart().StartsWith("{"))
+                {
+                    return null;
+                }
+                var data = Serialization.FromJson<WebStoreModels.QuerySearchResponse>(str);
+                return data?.data?.Catalog?.searchStore?.elements;
+            }
+            catch (Exception ex)
+            {
+                Playnite.SDK.LogManager.GetLogger().Error(ex, "Epic QuerySearch failed");
+                return null;
+            }
         }
 
         public async Task<WebStoreModels.ProductResponse> GetProductInfo(string productSlug, string PlayniteLanguage = "en-US")

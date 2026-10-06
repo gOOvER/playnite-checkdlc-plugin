@@ -1,4 +1,4 @@
-﻿using Playnite.SDK;
+using Playnite.SDK;
 using Playnite.SDK.Models;
 using CommonPluginsShared.Models;
 using System;
@@ -414,7 +414,6 @@ namespace CommonPluginsShared.Collections
 
                     try
                     {
-                        Thread.Sleep(100);
                         RefreshNoLoader(id);
                     }
                     catch (Exception ex)

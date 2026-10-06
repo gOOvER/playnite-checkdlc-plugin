@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2026-10-06
+
+### Fixed
+- **Library Refresh Performance Bottleneck**: Overrode `Refresh` in `CheckDlcDatabase` to filter games upfront to only supported store libraries (Steam, GOG, Epic, etc.) or manual games, eliminating redundant iterations and UI updates over thousands of unsupported titles.
+- **Removed Loop Sleep Delay**: Eliminated arbitrary 100ms thread sleep inside the refresh iteration loop.
+- **Steam App Details Rate Limiting**: Reduced initial delay in `GetAppDetails` from 1,000ms to 250ms and capped retries with sane 2-second backoff (max 3 attempts instead of 10 with 20s backoff), preventing library scans from hanging for 18+ minutes per title.
+- **Steam Auth Hang on Expired Cookies**: Prevented unauthenticated Steam lookups from locking the UI thread in offscreen browser renewal loops.
+- **Epic Store GraphQL 404 / Bot Challenge Crash**: Safely handled non-JSON and HTTP error responses from dead/Cloudflare-protected Epic GraphQL endpoint with circuit breaker, stopping endless exception loops.
+
+---
+
 ## [1.0.0] - 2026-10-06
 
 ### Added

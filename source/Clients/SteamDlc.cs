@@ -44,10 +44,23 @@ namespace CheckDlc.Clients
 
             try
             {
-                if (SteamApi != null && SteamApi.IsUserLoggedIn)
+                if (SteamApi != null)
                 {
+                    AccountInfos accountInfos = null;
+                    try
+                    {
+                        if (SteamApi.IsUserLoggedIn)
+                        {
+                            accountInfos = SteamApi.CurrentAccountInfos;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warn(ex, "Failed to check Steam login state; continuing with unauthenticated DLC lookup.");
+                    }
+
                     List<Dlc> newDlcs = new List<Dlc>();
-                    ObservableCollection<DlcInfos> dlcs = SteamApi.GetDlcInfos(game.GameId, SteamApi.CurrentAccountInfos);
+                    ObservableCollection<DlcInfos> dlcs = SteamApi.GetDlcInfos(game.GameId, accountInfos);
                     dlcs?.ForEach(x =>
                     {
                         Dlc dlc = new Dlc
@@ -67,10 +80,6 @@ namespace CheckDlc.Clients
 
                     Logger.Info($"Find {newDlcs?.Count} dlc(s)");
                     return newDlcs?.Count > 0 ? newDlcs : gameDlcs;
-                }
-                else
-                {
-                    ShowNotificationPluginNoAuthenticate(string.Format(ResourceProvider.GetString("LOCCommonStoresNoAuthenticate"), ClientName), ExternalPlugin.CheckDlc);
                 }
             }
             catch(Exception ex)

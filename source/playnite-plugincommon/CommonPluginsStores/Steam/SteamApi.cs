@@ -151,26 +151,13 @@ namespace CommonPluginsStores.Steam
             {
                 SteamUserData userData = GetUserData();
                 bool isLogged = userData?.RgOwnedApps?.Count > 0;
-                if (!isLogged)
+                if (!isLogged && !string.IsNullOrEmpty(CurrentAccountInfos.Link))
                 {
-                    Thread.Sleep(2000);
+                    string url = string.Format(UrlRefreshToken, CurrentAccountInfos.Link);
+                    List<HttpCookie> cookies = GetNewWebCookies(new List<string> { url, "https://steamcommunity.com/my", UrlStore }, false);
+                    _ = SetStoredCookies(cookies);
                     userData = GetUserData();
                     isLogged = userData?.RgOwnedApps?.Count > 0;
-
-                    // renew
-                    if (!isLogged)
-                    {
-                        string url = string.Format(UrlRefreshToken, CurrentAccountInfos.Link);
-
-                        for (int attempt = 0; attempt < 3 && !isLogged; attempt++)
-                        {
-                            Thread.Sleep(250);
-                            List<HttpCookie> cookies = GetNewWebCookies(new List<string> { url, "https://steamcommunity.com/my", UrlStore }, attempt > 0);
-                            _ = SetStoredCookies(cookies);
-                            userData = GetUserData();
-                            isLogged = userData?.RgOwnedApps?.Count > 0;
-                        }
-                    }
                 }
                 return isLogged;
             }
@@ -996,14 +983,15 @@ namespace CommonPluginsStores.Steam
             {
                 string url = string.Format(UrlApiGameDetails, appId, CodeLang.GetSteamLang(Local));
                 int attempt = 0;
-                const int maxAttempts = 10;
+                const int maxAttempts = 3;
 
                 while (attempt < maxAttempts)
                 {
-                    Thread.Sleep(1000 + (attempt > 0 ? 20000 * attempt : 0)); // 1s initial, then 20s * attempt on retry
+                    // Rate limit: 250ms initial, on rate-limit retry wait 2s * attempt
+                    Thread.Sleep(attempt == 0 ? 250 : 2000 * attempt);
                     string response = Web.DownloadStringData(url).GetAwaiter().GetResult();
 
-                    if (Serialization.TryFromJson(response, out Dictionary<string, StoreAppDetailsResult> parsedData))
+                    if (!string.IsNullOrEmpty(response) && Serialization.TryFromJson(response, out Dictionary<string, StoreAppDetailsResult> parsedData))
                     {
                         if (parsedData != null && parsedData.TryGetValue(appId.ToString(), out storeAppDetailsResult))
                         {
@@ -1012,7 +1000,7 @@ namespace CommonPluginsStores.Steam
                         }
                     }
 
-                    if (response.Length < 25)
+                    if (response == null || response.Length < 25)
                     {
                         attempt++;
                         Logger.Warn($"Api limit for Steam with {appId} - attempt {attempt}/{maxAttempts}");

@@ -198,6 +198,84 @@ namespace CheckDlc.Services
             }
         }
 
+        public override void Refresh(IEnumerable<Guid> ids, string message)
+        {
+            if (ids == null)
+            {
+                return;
+            }
+
+            // Filter out unsupported libraries upfront unless manually configured
+            List<Guid> validIds = ids.Where(id =>
+            {
+                Game g = API.Instance.Database.Games.Get(id);
+                if (g == null)
+                {
+                    return false;
+                }
+                if (CheckDlc.SupportedLibrary.Contains(g.PluginId))
+                {
+                    return true;
+                }
+                GameDlc loaded = Get(id, true);
+                return loaded?.IsManual == true;
+            }).ToList();
+
+            if (validIds.Count == 0)
+            {
+                Logger.Info("Refresh: no supported games to refresh.");
+                return;
+            }
+
+            GlobalProgressOptions globalProgressOptions = new GlobalProgressOptions($"{PluginName} - {message}")
+            {
+                Cancelable = true,
+                IsIndeterminate = validIds.Count == 1
+            };
+
+            _ = API.Instance.Dialogs.ActivateGlobalProgress((a) =>
+            {
+                API.Instance.Database.BeginBufferUpdate();
+                Database.BeginBufferUpdate();
+
+                Stopwatch stopWatch = new Stopwatch();
+                stopWatch.Start();
+
+                a.ProgressMaxValue = validIds.Count;
+
+                foreach (Guid id in validIds)
+                {
+                    Game game = API.Instance.Database.Games.Get(id);
+                    a.Text = $"{PluginName} - {message}"
+                        + (validIds.Count == 1 ? string.Empty : "\n\n" + $"{a.CurrentProgressValue}/{a.ProgressMaxValue}")
+                        + "\n" + game?.Name + (game?.Source == null ? string.Empty : $" ({game?.Source.Name})");
+
+                    if (a.CancelToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    try
+                    {
+                        RefreshNoLoader(id);
+                    }
+                    catch (Exception ex)
+                    {
+                        Common.LogError(ex, false, true, PluginName);
+                    }
+
+                    a.CurrentProgressValue++;
+                }
+
+                stopWatch.Stop();
+                TimeSpan ts = stopWatch.Elapsed;
+                Logger.Info($"Task Refresh(){(a.CancelToken.IsCancellationRequested ? " canceled" : string.Empty)} - {string.Format("{0:00}:{1:00}.{2:00}", ts.Minutes, ts.Seconds, ts.Milliseconds / 10)} for {a.CurrentProgressValue}/{validIds.Count} items");
+
+                Database.EndBufferUpdate();
+                API.Instance.Database.EndBufferUpdate();
+            }, globalProgressOptions);
+        }
+
         public override void RefreshNoLoader(Guid id)
         {
             Game game = API.Instance.Database.Games.Get(id);
