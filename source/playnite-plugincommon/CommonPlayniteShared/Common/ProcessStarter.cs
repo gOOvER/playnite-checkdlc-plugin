@@ -1,4 +1,4 @@
-﻿using Playnite.SDK;
+using Playnite.SDK;
 using CommonPlayniteShared.Native;//using Playnite.Native;
 using System;
 using System.Collections.Generic;
@@ -70,15 +70,27 @@ namespace CommonPlayniteShared.Common
         public static Process StartUrl(string url)
         {
             logger.Debug($"Opening URL: {url}");
+            if (string.IsNullOrWhiteSpace(url) ||
+                !Uri.TryCreate(url, UriKind.Absolute, out Uri uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                logger.Warn($"Blocked attempt to open invalid or unsafe URL: {url}");
+                return null;
+            }
+
             try
             {
-                return Process.Start(url);
+                return Process.Start(new ProcessStartInfo
+                {
+                    FileName = uri.AbsoluteUri,
+                    UseShellExecute = true
+                });
             }
             catch (Exception e)
             {
                 // There are some crash report with 0x80004005 error when opening standard URL.
                 logger.Error(e, "Failed to open URL.");
-                return Process.Start(CmdLineTools.Cmd, $"/C start {url}");
+                return Process.Start(CmdLineTools.Cmd, $"/C start \"\" \"{uri.AbsoluteUri}\"");
             }
         }
 

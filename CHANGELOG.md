@@ -26,7 +26,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Control DataContext Recursion**: Fixed self-referencing getter recursion in `PluginButton.xaml.cs` and `PluginListDlc.xaml.cs` (`ControlDataContext = (Type)controlDataContext;`).
 - **Tagging False Positive**: Fixed `GameDlc.HasAllDlc` evaluating to `true` for games with 0 DLCs, which caused false "100%" tags.
 - **Manual AppId Parsing**: Added `uint.TryParse` fallback in manual Steam game assignment dialog to prevent `FormatException`.
-- **Memory Leak in UI Elements**: Avoided unmanaged event hook leaks on static database objects from transient WPF controls.
+- **Win32 File Handle Leak**: Fixed OS file handle leak in `Paths.GetFinalPathName(path)` where UNC paths returned early without closing the Kernel32 file handle.
+- **Command Injection Vulnerability**: Hardened `ProcessStarter.StartUrl` and `Commands.NavigateUrl` with strict HTTP/HTTPS URI scheme validation and secure argument quoting on `cmd.exe /C start` fallback.
+- **StoreApi Cookie Deletion Crash**: Guarded `CookiesDomains.ForEach` with null check in `StoreApi.cs` when clearing web cookies.
+- **StoreApi Disk I/O Bottleneck**: Cached `CurrentGamesDlcsOwned` in memory to eliminate redundant disk writes and file reads on every property access.
+- **Origin API Null References**: Added null checks for `GetAccessToken()` and `GetAccountInfo()` in `OriginApi.cs` to prevent NRE crashes when sessions are expired or unauthenticated.
+- **SteamKit2 Hardening**: Added null and `KeyValue.Invalid` checks for SteamKit WebAPI responses (`ISteamApps`, `IStoreService`, `ISteamUser`, `IPlayerService`, `ISteamUserStats`), guarded `ulong.TryParse` for Steam IDs, and standardized achievement percentage parsing to `CultureInfo.InvariantCulture`.
+- **Steam App Details Safe Lookup**: Replaced unsafe dictionary indexer in `SteamApi.GetAppDetails` with `TryGetValue` to avoid unhandled `KeyNotFoundException`.
+- **GOG Image URL Handling**: Prevented invalid `"https:"` URL construction in `GogApi.cs` when product `Logo2x` is null or empty.
+- **Web Redirect Loop Protection**: Added maximum redirect depth limit (5 hops) in `Web.DownloadStringData` to prevent stack overflow on circular HTTP redirects.
+- **Memory & Socket Leaks in Epic API**: Removed orphaned and unused `HttpClient` instantiation in `EpicApi.QueryWishList` and ensured proper disposal via `using` statements.
 
 ### Changed
 - **Price Parsing Performance**: Optimized `Dlc.PriceNumeric` and `PriceBaseNumeric` to eliminate repetitive runtime regex parsing and string allocations on data binding.

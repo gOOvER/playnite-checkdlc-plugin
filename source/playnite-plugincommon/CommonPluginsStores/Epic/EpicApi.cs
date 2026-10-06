@@ -1,4 +1,4 @@
-﻿using CommonPlayniteShared.Common;
+using CommonPlayniteShared.Common;
 using CommonPlayniteShared.PluginLibrary.EpicLibrary.Models;
 using CommonPlayniteShared.PluginLibrary.EpicLibrary.Services;
 using CommonPluginsShared;
@@ -1057,10 +1057,12 @@ namespace CommonPluginsStores.Epic
                     query.variables.locale = CodeLang.GetEpicLang(Local);
                     query.variables.country = CodeLang.GetOriginLangCountry(Local);
                     StringContent content = new StringContent(Serialization.ToJson(query), Encoding.UTF8, "application/json");
-                    HttpClient httpClient = new HttpClient();
-                    HttpResponseMessage response = await httpClient.PostAsync(UrlGraphQL, content);
-                    string str = await response.Content.ReadAsStringAsync();
-                    data = Serialization.FromJson<EpicAddonsByNamespace>(str);
+                    using (HttpClient httpClient = new HttpClient())
+                    {
+                        HttpResponseMessage response = await httpClient.PostAsync(UrlGraphQL, content);
+                        string str = await response.Content.ReadAsStringAsync();
+                        data = Serialization.FromJson<EpicAddonsByNamespace>(str);
+                    }
                 }
 
                 return data;
@@ -1095,9 +1097,6 @@ namespace CommonPluginsStores.Epic
         {
             try
             {
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + AuthToken.Token);
-
                 var queryObject = new
                 {
                     query = query,

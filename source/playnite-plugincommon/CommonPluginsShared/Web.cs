@@ -1,4 +1,4 @@
-﻿using CommonPlayniteShared;
+using CommonPlayniteShared;
 using Playnite.SDK;
 using System;
 using System.Collections.Generic;
@@ -299,6 +299,17 @@ namespace CommonPluginsShared
         /// <returns></returns>
         public static async Task<string> DownloadStringData(string url)
         {
+            return await DownloadStringData(url, 0);
+        }
+
+        private static async Task<string> DownloadStringData(string url, int redirectCount)
+        {
+            if (redirectCount > 5)
+            {
+                Common.LogDebug(true, $"DownloadStringData() too many redirects for {url}");
+                return string.Empty;
+            }
+
             using (HttpClient client = new HttpClient())
             {
                 HttpRequestMessage request = new HttpRequestMessage()
@@ -330,6 +341,11 @@ namespace CommonPluginsShared
                 if (statusCode >= 300 && statusCode <= 399)
                 {
                     var redirectUri = response.Headers.Location;
+                    if (redirectUri == null)
+                    {
+                        return string.Empty;
+                    }
+
                     if (!redirectUri.IsAbsoluteUri)
                     {
                         redirectUri = new Uri(request.RequestUri.GetLeftPart(UriPartial.Authority) + redirectUri);
@@ -337,7 +353,7 @@ namespace CommonPluginsShared
 
                     Common.LogDebug(true, string.Format("DownloadStringData() redirecting to {0}", redirectUri));
 
-                    return await DownloadStringData(redirectUri.ToString());
+                    return await DownloadStringData(redirectUri.ToString(), redirectCount + 1);
                 }
                 else
                 {

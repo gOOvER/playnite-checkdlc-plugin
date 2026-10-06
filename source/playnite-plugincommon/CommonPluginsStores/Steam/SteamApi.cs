@@ -1,4 +1,4 @@
-﻿using CommonPluginsShared;
+using CommonPluginsShared;
 using CommonPluginsShared.Extensions;
 using CommonPluginsStores.Models;
 using CommonPluginsStores.Steam.Models;
@@ -975,9 +975,14 @@ namespace CommonPluginsStores.Steam
 
         public bool CheckGameIsPrivate(uint appId, AccountInfos accountInfos)
         {
-            return StoreSettings.UseAuth || accountInfos.IsPrivate || !StoreSettings.UseApi || accountInfos.ApiKey.IsNullOrEmpty()
-                ? CheckGameIsPrivateByWeb(appId, accountInfos)
-                : SteamKit.CheckGameIsPrivate(accountInfos.ApiKey, appId, ulong.Parse(accountInfos.UserId));
+            if (StoreSettings.UseAuth || accountInfos.IsPrivate || !StoreSettings.UseApi || accountInfos.ApiKey.IsNullOrEmpty())
+            {
+                return CheckGameIsPrivateByWeb(appId, accountInfos);
+            }
+
+            return ulong.TryParse(accountInfos.UserId, out ulong steamId)
+                ? SteamKit.CheckGameIsPrivate(accountInfos.ApiKey, appId, steamId)
+                : CheckGameIsPrivateByWeb(appId, accountInfos);
         }
         #endregion
 
@@ -1000,9 +1005,11 @@ namespace CommonPluginsStores.Steam
 
                     if (Serialization.TryFromJson(response, out Dictionary<string, StoreAppDetailsResult> parsedData))
                     {
-                        storeAppDetailsResult = parsedData[appId.ToString()];
-                        FileSystem.WriteStringToFile(cachePath, Serialization.ToJson(storeAppDetailsResult));
-                        break;
+                        if (parsedData != null && parsedData.TryGetValue(appId.ToString(), out storeAppDetailsResult))
+                        {
+                            FileSystem.WriteStringToFile(cachePath, Serialization.ToJson(storeAppDetailsResult));
+                            break;
+                        }
                     }
 
                     if (response.Length < 25)
@@ -1181,7 +1188,8 @@ namespace CommonPluginsStores.Steam
                     _ = Serialization.TryFromJson(json, out SteamWishlistApi steamWishlistApi, out Exception ex);
                     if (ex != null)
                     {
-                        throw ex;
+                        Logger.Error(ex, $"Failed to deserialize Steam wishlist for {steamId}");
+                        return null;
                     }
 
                     steamWishlistApi?.Response?.Items?.ForEach(x =>

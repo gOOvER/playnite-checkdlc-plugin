@@ -1,4 +1,4 @@
-﻿using CommonPluginsShared;
+using CommonPluginsShared;
 using CommonPluginsStores.Steam.Models.SteamKit;
 using Playnite.SDK;
 using Playnite.SDK.Data;
@@ -44,13 +44,16 @@ namespace CommonPluginsStores.Steam
                 {
                     List<SteamApp> appList = new List<SteamApp>();
                     KeyValue results = steamInterface.Call("GetAppList", 2);
-                    foreach (KeyValue data in results["apps"].Children)
+                    if (results != null && results != KeyValue.Invalid && results["apps"] != null && results["apps"] != KeyValue.Invalid)
                     {
-                        appList.Add(new SteamApp
+                        foreach (KeyValue data in results["apps"].Children)
                         {
-                            AppId = data["appid"].AsUnsignedInteger(),
-                            Name = data["name"].AsString()
-                        });
+                            appList.Add(new SteamApp
+                            {
+                                AppId = data["appid"].AsUnsignedInteger(),
+                                Name = data["name"].AsString()
+                            });
+                        }
                     }
                     return appList;
                 }
@@ -90,13 +93,21 @@ namespace CommonPluginsStores.Steam
                     using (WebAPI.Interface steamInterface = WebAPI.GetInterface("IStoreService", apiKey))
                     {
                         KeyValue results = steamInterface.Call("GetAppList", 1, args);
-                        foreach (KeyValue data in results["apps"].Children)
+                        if (results == null || results == KeyValue.Invalid)
                         {
-                            allApps.Add(new SteamApp
+                            break;
+                        }
+
+                        if (results["apps"] != null && results["apps"] != KeyValue.Invalid)
+                        {
+                            foreach (KeyValue data in results["apps"].Children)
                             {
-                                AppId = data["appid"].AsUnsignedInteger(),
-                                Name = data["name"].AsString()
-                            });
+                                allApps.Add(new SteamApp
+                                {
+                                    AppId = data["appid"].AsUnsignedInteger(),
+                                    Name = data["name"].AsString()
+                                });
+                            }
                         }
                         haveMore = results["have_more_results"].AsBoolean();
                         lastAppId = results["last_appid"].AsUnsignedInteger();
@@ -283,7 +294,7 @@ namespace CommonPluginsStores.Steam
                                     InternalName = x.InternalName,
                                     LocalizedDesc = x.LocalizedDesc,
                                     LocalizedName = x.LocalizedName,
-                                    PlayerPercentUnlocked = x.PlayerPercentUnlocked.IsNullOrEmpty() ? 100 : float.Parse(x.PlayerPercentUnlocked.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)),
+                                    PlayerPercentUnlocked = float.TryParse(x.PlayerPercentUnlocked, NumberStyles.Float, CultureInfo.InvariantCulture, out float pct) ? pct : 100f,
                                 });
                             });
                         }
@@ -305,7 +316,7 @@ namespace CommonPluginsStores.Steam
                                 InternalName = data["internal_name"].AsString(),
                                 LocalizedDesc = data["localized_desc"].AsString(),
                                 LocalizedName = data["localized_name"].AsString(),
-                                PlayerPercentUnlocked = string.IsNullOrEmpty(data["player_percent_unlocked"].AsString()) ? 100 : float.Parse(data["player_percent_unlocked"].AsString().Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)),
+                                PlayerPercentUnlocked = float.TryParse(data["player_percent_unlocked"].AsString(), NumberStyles.Float, CultureInfo.InvariantCulture, out float pct) ? pct : 100f,
                             });
                         }
                     }
@@ -493,7 +504,7 @@ namespace CommonPluginsStores.Steam
             }
             catch (Exception ex)
             {
-                return ex.Message.Contains("403");
+                return ex.ToString().Contains("403");
             }
         }
         #endregion

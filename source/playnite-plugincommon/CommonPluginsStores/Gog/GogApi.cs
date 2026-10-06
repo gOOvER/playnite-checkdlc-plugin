@@ -1,4 +1,4 @@
-﻿using AngleSharp.Dom;
+using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using CommonPlayniteShared.Common;
@@ -673,7 +673,7 @@ namespace CommonPluginsStores.Gog
                             Id = el.Id.ToString(),
                             Name = productApiDetail?.Title,
                             Description = RemoveDescriptionPromos(productApiDetail?.ProductDescription?.Full).Trim(),
-                            Image = "https:" + productApiDetail?.ProductImages?.Logo2x,
+                            Image = string.IsNullOrEmpty(productApiDetail?.ProductImages?.Logo2x) ? string.Empty : "https:" + productApiDetail.ProductImages.Logo2x,
                             Link = string.Format(UrlGogGame, productApiDetail?.Slug),
                             IsOwned = IsOwned
                         };

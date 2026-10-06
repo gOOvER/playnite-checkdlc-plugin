@@ -1,4 +1,4 @@
-﻿using CommonPlayniteShared.Common.Web;
+using CommonPlayniteShared.Common.Web;
 using CommonPlayniteShared.PluginLibrary.OriginLibrary.Models;
 using CommonPlayniteShared.PluginLibrary.OriginLibrary.Services;
 using CommonPluginsShared;
@@ -367,8 +367,21 @@ namespace CommonPluginsStores.Origin
                     ObservableCollection<AccountWishlist> data = new ObservableCollection<AccountWishlist>();
 
                     // Get informations from Origin plugin.
-                    string accessToken = OriginAPI.GetAccessToken().access_token;
-                    long userId = OriginAPI.GetAccountInfo(OriginAPI.GetAccessToken()).pid.pidId;
+                    var tokenObj = OriginAPI.GetAccessToken();
+                    if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
+                    {
+                        Logger.Warn("Origin access token is null or empty.");
+                        return data;
+                    }
+                    string accessToken = tokenObj.access_token;
+
+                    var accountInfo = OriginAPI.GetAccountInfo(tokenObj);
+                    if (accountInfo?.pid == null)
+                    {
+                        Logger.Warn("Origin account info or pid is null.");
+                        return data;
+                    }
+                    long userId = accountInfo.pid.pidId;
 
                     using (WebClient webClient = new WebClient { Encoding = Encoding.UTF8 })
                     {
@@ -421,8 +434,19 @@ namespace CommonPluginsStores.Origin
             {
                 try
                 {
-                    string accessToken = OriginAPI.GetAccessToken().access_token;
-                    long userId = OriginAPI.GetAccountInfo(OriginAPI.GetAccessToken()).pid.pidId;
+                    var tokenObj = OriginAPI.GetAccessToken();
+                    if (tokenObj == null || string.IsNullOrEmpty(tokenObj.access_token))
+                    {
+                        return false;
+                    }
+                    string accessToken = tokenObj.access_token;
+
+                    var accountInfo = OriginAPI.GetAccountInfo(tokenObj);
+                    if (accountInfo?.pid == null)
+                    {
+                        return false;
+                    }
+                    long userId = accountInfo.pid.pidId;
 
                     using (WebClient webClient = new WebClient { Encoding = Encoding.UTF8 })
                     {

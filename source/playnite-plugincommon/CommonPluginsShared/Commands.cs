@@ -1,4 +1,4 @@
-﻿using Playnite.SDK;
+using Playnite.SDK;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,17 +14,29 @@ namespace CommonPluginsShared
         {
             try
             {
+                string targetUrl = null;
                 if (url is string stringUrl)
                 {
-                    Process.Start(stringUrl);
+                    targetUrl = stringUrl;
                 }
                 else if (url is Uri uriUrl)
                 {
-                    Process.Start(uriUrl.AbsoluteUri);
+                    targetUrl = uriUrl.AbsoluteUri;
+                }
+
+                if (!string.IsNullOrWhiteSpace(targetUrl) &&
+                    Uri.TryCreate(targetUrl, UriKind.Absolute, out Uri validatedUri) &&
+                    (validatedUri.Scheme == Uri.UriSchemeHttp || validatedUri.Scheme == Uri.UriSchemeHttps))
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = validatedUri.AbsoluteUri,
+                        UseShellExecute = true
+                    });
                 }
                 else
                 {
-                    throw new Exception("Unsupported URL format.");
+                    throw new Exception("Unsupported or unsafe URL format.");
                 }
             }
             catch (Exception ex)

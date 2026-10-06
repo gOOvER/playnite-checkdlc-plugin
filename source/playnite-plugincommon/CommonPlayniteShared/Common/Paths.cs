@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -18,6 +18,16 @@ namespace CommonPlayniteShared.Common
 
         public static string GetFinalPathName(string path)
         {
+            if (path == null)
+            {
+                return null;
+            }
+
+            if (path.StartsWith(@"\\"))
+            {
+                return path;
+            }
+
             var h = Kernel32.CreateFile(path,
                 0,
                 FileShare.ReadWrite | FileShare.Delete,
@@ -25,11 +35,6 @@ namespace CommonPlayniteShared.Common
                 FileMode.Open,
                 Fileapi.FILE_FLAG_BACKUP_SEMANTICS,
                 IntPtr.Zero);
-
-            if (path.StartsWith(@"\\"))
-            {
-                return path;
-            }
 
             if (h == Winuser.INVALID_HANDLE_VALUE)
             {

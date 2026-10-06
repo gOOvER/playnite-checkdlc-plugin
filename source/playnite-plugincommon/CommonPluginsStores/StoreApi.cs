@@ -1,4 +1,4 @@
-﻿using CommonPlayniteShared;
+using CommonPlayniteShared;
 using CommonPlayniteShared.Common;
 using CommonPluginsShared;
 using CommonPluginsShared.Converters;
@@ -69,14 +69,23 @@ namespace CommonPluginsStores
             set => SetValue(ref _currentGamesInfos, value);
         }
 
+        private ObservableCollection<GameDlcOwned> _currentGamesDlcsOwned;
         public ObservableCollection<GameDlcOwned> CurrentGamesDlcsOwned
         {
             get
             {
-                ObservableCollection<GameDlcOwned> currentGamesDlcsOwned = LoadGamesDlcsOwned() ?? GetGamesDlcsOwned() ?? LoadGamesDlcsOwned(false);
-                _ = SaveGamesDlcsOwned(currentGamesDlcsOwned);
-                return currentGamesDlcsOwned;
+                if (_currentGamesDlcsOwned == null)
+                {
+                    _currentGamesDlcsOwned = LoadGamesDlcsOwned() ?? GetGamesDlcsOwned() ?? LoadGamesDlcsOwned(false);
+                    if (_currentGamesDlcsOwned != null)
+                    {
+                        _ = SaveGamesDlcsOwned(_currentGamesDlcsOwned);
+                    }
+                }
+                return _currentGamesDlcsOwned;
             }
+
+            set => SetValue(ref _currentGamesDlcsOwned, value);
         }
         #endregion
 
@@ -260,7 +269,7 @@ namespace CommonPluginsStores
                         ? webView.GetCookies()?.Where(x => CookiesDomains.Any(y => y.Contains(x?.Domain, StringComparison.OrdinalIgnoreCase)))?.ToList() ?? new List<HttpCookie>()
                         : webView.GetCookies()?.Where(x => x?.Domain?.Contains(ClientName, StringComparison.OrdinalIgnoreCase) ?? false)?.ToList() ?? new List<HttpCookie>();
 
-                    if (deleteCookies)
+                    if (deleteCookies && CookiesDomains != null)
                     {
                         CookiesDomains.ForEach(x => { webView.DeleteDomainCookies(x); });
                     }
