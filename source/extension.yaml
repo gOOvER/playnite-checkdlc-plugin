@@ -1,7 +1,7 @@
 Id: goover_CheckDLCNG_Plugin
 Name: CheckDLCNG
 Author: gOOvER
-Version: 1.0.1
+Version: 1.0.2
 Module: CheckDlc.dll
 Type: GenericPlugin
 Icon: icon.png

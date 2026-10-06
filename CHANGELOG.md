@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2026-10-06
+
+### Fixed
+- **DLC List Display**: Fixed bug in `CheclDlcGameView` where default price limit of 0 filtered out all paid DLCs, causing the list to appear completely empty with 0 results found.
+- **UI Header Text Overlap**: Removed abandoned price limit controls that were occupying the same grid column as the hidden count text, fixing text collision and overlapping in the game view header.
+- **Rounded Corners**: Added `CornerRadius="{DynamicResource ControlCornerRadius}"` to the filter options border container in accordance with the Penumbra design guidelines.
+
+---
+
 ## [1.0.1] - 2026-10-06
 
 ### Fixed

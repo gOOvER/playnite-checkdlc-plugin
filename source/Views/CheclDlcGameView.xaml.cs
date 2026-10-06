@@ -32,7 +32,7 @@ namespace CheckDlc.Views
             InitializeComponent();
 
             GameContext = gameContext;
-            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
+            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked);
 
             PART_PriceNotification.Visibility = (PluginDatabase.Get(gameContext, true)?.IsManual ?? false) ? Visibility.Collapsed : Visibility.Visible;
         }
@@ -53,7 +53,7 @@ namespace CheckDlc.Views
         {
             PART_Dlcs.ItemsSource = null;
             PluginDatabase.Refresh(GameContext.Id);
-            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
+            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked);
         }
 
 
@@ -72,30 +72,25 @@ namespace CheckDlc.Views
         #region Filter
         private void PART_TgHide_Click(object sender, RoutedEventArgs e)
         {
-            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
+            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked);
         }
 
         private void PART_TgFree_Click(object sender, RoutedEventArgs e)
         {
             PART_TgHide.IsChecked = false;
             PART_TgHidden.IsChecked = false;
-            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
+            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked);
         }
 
         private void PART_TgHidden_Click(object sender, RoutedEventArgs e)
         {
             PART_TgFree.IsChecked = false;
             PART_TgHide.IsChecked = false;
-            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
-        }
-
-        private void PART_LimitPrice_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
+            Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked);
         }
 
 
-        private void Filter(bool hiddenOwned, bool onlyFree, bool showHidden, string price)
+        private void Filter(bool hiddenOwned, bool onlyFree, bool showHidden)
         {
             PART_Dlcs.ItemsSource = null;
 
@@ -106,12 +101,6 @@ namespace CheckDlc.Views
             }
 
             PART_PriceNotification.IsChecked = gameDlc.PriceNotification;
-
-            double PriceLimit = double.MaxValue;
-            if (!string.IsNullOrWhiteSpace(price) && double.TryParse(price, NumberStyles.Any, CultureInfo.CurrentCulture, out double parsedLimit))
-            {
-                PriceLimit = parsedLimit;
-            }
 
             IEnumerable<Dlc> query = gameDlc.Items;
             if (hiddenOwned)
@@ -129,10 +118,6 @@ namespace CheckDlc.Views
             if (onlyFree)
             {
                 query = query.Where(x => x.IsFree);
-            }
-            if (PriceLimit < double.MaxValue)
-            {
-                query = query.Where(x => x.PriceNumeric <= PriceLimit);
             }
 
             List<Dlc> data = query.OrderBy(x => x.Name).ToList();
@@ -160,7 +145,7 @@ namespace CheckDlc.Views
                     PluginDatabase.PluginSettings.Settings.IgnoredList.Add(id);
                 }
                 Plugin.SavePluginSettings(PluginDatabase.PluginSettings.Settings);
-                Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
+                Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked);
             }
             catch (Exception ex)
             {
@@ -182,7 +167,7 @@ namespace CheckDlc.Views
                     PluginDatabase.PluginSettings.Settings.ManuallyOwneds.Add(id);
                 }
                 Plugin.SavePluginSettings(PluginDatabase.PluginSettings.Settings);
-                Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked, PART_LimitPrice.Text);
+                Filter((bool)PART_TgHide.IsChecked, (bool)PART_TgFree.IsChecked, (bool)PART_TgHidden.IsChecked);
             }
             catch (Exception ex)
             {
