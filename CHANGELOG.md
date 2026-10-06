@@ -9,10 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.0.0] - 2026-10-06
+
 ### Added
+- **Rebranding to CheckDLC-NG**: Official modernization and rebirth of the project as **CheckDLC-NG** maintained by gOOvER, starting at version `1.0.0`.
 - **SDK-style Project Conversion**: Modernized `CheckDlc.csproj` to SDK-style (`Microsoft.NET.Sdk` with `net462` and `UseWpf`) enabling fast CLI builds via `dotnet build` and modern C# 10 language features.
 - **Direct Integration of `playnite-plugincommon`**: Removed `.gitmodules` and integrated common store and control sources directly into the repository, eliminating git submodule friction.
 - **Process Security**: Enforced URI scheme validation and `UseShellExecute` before opening external links to prevent command injection.
+- **Dual Custom Element & Settings Support**: Registered both `CheckDlc` and `CheckDLC-NG` source names to guarantee 100% backward compatibility with existing community themes (e.g. Penumbra Themes).
 
 ### Removed
 - **Legacy Package Management**: Removed `.gitmodules`, `packages.config`, and legacy `packages/` folder in favor of native NuGet `PackageReference`.

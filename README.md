@@ -1,52 +1,61 @@
-[![Crowdin](https://badges.crowdin.net/playnite-extensions/localized.svg)](https://crowdin.com/project/playnite-extensions)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/Lacro59/playnite-checkdlc-plugin?cacheSeconds=5000&logo=github)](https://github.com/Lacro59/playnite-checkdlc-plugin/releases/latest)
-[![GitHub Release Date](https://img.shields.io/github/release-date/Lacro59/playnite-checkdlc-plugin?cacheSeconds=5000)](https://github.com/Lacro59/playnite-checkdlc-plugin/releases/latest)
-[![Github Lastest Releases](https://img.shields.io/github/downloads/Lacro59/playnite-checkdlc-plugin/latest/total.svg)]()
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Lacro59/playnite-checkdlc-plugin)](https://github.com/Lacro59/playnite-checkdlc-plugin/graphs/commit-activity)
-[![GitHub contributors](https://img.shields.io/github/contributors/Lacro59/playnite-checkdlc-plugin?cacheSeconds=5000)](https://github.com/Lacro59/playnite-checkdlc-plugin/graphs/contributors)
-[![GitHub](https://img.shields.io/github/license/Lacro59/playnite-checkdlc-plugin?cacheSeconds=50000)](https://github.com/Lacro59/playnite-checkdlc-plugin/blob/master/LICENSE)
+<!-- markdownlint-disable MD033 MD041 -->
 
-# playnite-checkdlc-plugin
-An extension for the popular game library, [Playnite](https://playnite.link).  
+# CheckDLC-NG
 
-## Informations
-This plugin helps you find your owned extensions across your many games, inside Playnite.
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/gOOvER/playnite-checkdlc-plugin?style=flat-square)](https://github.com/gOOvER/playnite-checkdlc-plugin/releases)
+[![Website](https://img.shields.io/badge/playnite.goover.dev-Showcase%20%26%20Downloads-ea8024?style=flat-square&logo=googlechrome&logoColor=white)](https://playnite.goover.dev)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=flat-square)](LICENSE)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support-F16061?style=flat-square&logo=ko-fi&logoColor=white)](https://ko-fi.com/goover)
+
+> **CheckDLC-NG** is an advanced extension for the [Playnite](https://playnite.link/ "Playnite - video game library manager") video game library manager that helps you inspect, discover, track, and manage downloadable content (DLCs) across your game libraries directly within Playnite.
+>
+> Originally created as [CheckDlc](https://github.com/Lacro59/playnite-checkdlc-plugin) by Lacro59, now modernized, secured, and actively maintained as **CheckDLC-NG** by [gOOvER](https://github.com/gOOvER).
+
+🌐 **Official Showcase & Direct Downloads**: [https://playnite.goover.dev/](https://playnite.goover.dev/)  
+[GitHub Repository](https://github.com/gOOvER/playnite-checkdlc-plugin) | [Issue Tracker](https://github.com/gOOvER/playnite-checkdlc-plugin/issues)
+
+---
+
+## ✨ Features
+
+- **Multi-Store DLC Discovery**: Retrieves DLC listings and ownership data from Steam, Epic Games Store, GOG (including GOG OSS), EA App / Origin, PlayStation Network (PSN), and Nintendo eShop.
+- **Ownership & Price Tracking**: Instantly see which DLCs you already own, which are unowned, and highlight free DLCs.
+- **Price Change Notifications**: Monitors selected DLCs and notifies you when prices change or discounts occur.
+- **Automatic Tagging & Feature Badges**: Optionally adds tags to games with available DLCs or marks games where you own 100% of all DLCs.
+- **Manual Game & DLC Matching**: Search and manually assign store IDs (such as Steam AppIDs) to games that cannot be matched automatically.
+- **Seamless Theme Integration**: Provides ready-to-use custom element hooks (`PluginButton`, `PluginListDlcAll`, `PluginListDlcOwned`, `PluginListDlcNotOwned`) natively integrated with themes such as [Penumbra Themes](https://github.com/gOOvER/Penumbra-Themes).
+- **Data Export**: Export DLC listings and ownership statuses to CSV with built-in formula sanitization.
+
+---
+
+## 📸 Screenshots
 
 <div align="left">
-  <a href="https://github.com/Lacro59/playnite-checkdlc-plugin/blob/main/forum/main_01.jpg?raw=true">
-    <picture>
-      <img alt="main_01" src="https://github.com/Lacro59/playnite-checkdlc-plugin/blob/main/forum/main_01.jpg?raw=true" height="150px">
-    </picture>
-  </a>
-  <a href="https://github.com/Lacro59/playnite-checkdlc-plugin/blob/main/forum/settings_01.jpg?raw=true">
-    <picture>
-      <img alt="settings_01" src="https://github.com/Lacro59/playnite-checkdlc-plugin/blob/main/forum/settings_01.jpg?raw=true" height="150px">
-    </picture>
-  </a>
+  <picture>
+    <img alt="CheckDLC-NG Main DLC Overview" src="https://raw.githubusercontent.com/gOOvER/playnite-checkdlc-plugin/main/forum/main_01.jpg" height="220px">
+  </picture>
+  <picture>
+    <img alt="CheckDLC-NG Settings Panel" src="https://raw.githubusercontent.com/gOOvER/playnite-checkdlc-plugin/main/forum/settings_01.jpg" height="220px">
+  </picture>
 </div>
 
-With this plugin you can
-* get the list of DLC
-* see which DLC you own
+---
 
-## Translations
-If you would like to help, by translating our extension along with some other ones, you can find us at [crowdin](https://crowdin.com/project/playnite-extensions)!
+## 🌐 Community & Translations
 
-## Other Support
-Supporting [Playnite](https://www.patreon.com/playnite) and [SteamDB](https://steamdb.info/donate), would help our journey along with theirs.
+- **Translations**: Help translate CheckDLC-NG into your language on [Crowdin](https://crowdin.com/project/playnite-extensions).
+- **External Dependencies**: CheckDLC-NG leverages the modern [SteamKit2](https://github.com/SteamRE/SteamKit) library for high-speed, secure communication with Steam Web APIs.
 
-<br> <!-- fake padding 🤷‍♂️ -->
-<div align="center"> <!-- centering it cause i thought it would look good -->
-  <a href='https://ko-fi.com/lacro59'>
-    <img height='35' style='border:0px;height:46px;' src='https://cdn.prod.website-files.com/5c14e387dab576fe667689cf/670f5a0172b90570b1c21dab_kofi_logo.png' border='0' alt='Buy Me a Coffee at ko-fi.com' />
-  </a>
-</div>
+---
 
-## Support & Donate
+## ☕ Support & Donate
 
-[![Ko-fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/goover)
+If you enjoy CheckDLC-NG and would like to support ongoing development:
 
-## License
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20gOOvER-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/goover)
+
+---
+
+## 📄 License
 
 This project is licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**. See [LICENSE](LICENSE) for details.
-

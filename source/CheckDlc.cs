@@ -64,11 +64,21 @@ namespace CheckDlc
                 ElementList = new List<string> { "PluginButton", "PluginListDlcAll", "PluginListDlcOwned", "PluginListDlcNotOwned" },
                 SourceName = "CheckDlc"
             });
+            AddCustomElementSupport(new AddCustomElementSupportArgs
+            {
+                ElementList = new List<string> { "PluginButton", "PluginListDlcAll", "PluginListDlcOwned", "PluginListDlcNotOwned" },
+                SourceName = "CheckDLC-NG"
+            });
 
             // Settings integration
             AddSettingsSupport(new AddSettingsSupportArgs
             {
                 SourceName = "CheckDlc",
+                SettingsRoot = $"{nameof(PluginSettings)}.{nameof(PluginSettings.Settings)}"
+            });
+            AddSettingsSupport(new AddSettingsSupportArgs
+            {
+                SourceName = "CheckDLC-NG",
                 SettingsRoot = $"{nameof(PluginSettings)}.{nameof(PluginSettings.Settings)}"
             });
         }
