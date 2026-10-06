@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CheckDLC-NG")]
+[assembly: AssemblyTitle("CheckDLCNG")]
 [assembly: AssemblyDescription("Playnite extension for tracking and discovering owned game DLCs")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("gOOvER")]
-[assembly: AssemblyProduct("CheckDLC-NG")]
+[assembly: AssemblyProduct("CheckDLCNG")]
 [assembly: AssemblyCopyright("Copyright © 2019-2026")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
